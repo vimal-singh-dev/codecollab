@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CodeCollab - Real-time Collaborative Code Editor
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-14-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue) ![Socket.io](https://img.shields.io/badge/Socket.io-4.0-white)
 
-First, run the development server:
+CodeCollab is a powerful online code editor that enables real-time collaboration, code execution, and video communication. Built for developers and students to code together seamlessly.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Real-time Collaboration**: Code synchronizes instantly between all users in a room.
+- **Multi-language Support**: JavaScript, Python, Java, C++, and more.
+- **Code Execution**: Run code directly in the browser and see output instantly.
+- **Video & Audio Chat**: Built-in WebRTC video chat for seamless communication.
+- **Cursor Tracking**: See where others are typing in real-time.
+- **Modern UI**: Clean, dark-mode interface built with Tailwind CSS.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS, Monaco Editor
+- **State Management**: Zustand
+- **Backend**: Node.js, Express, Socket.io
+- **Real-time**: WebSockets, WebRTC (SimplePeer)
+- **Execution**: Node.js Child Processes
 
-## Learn More
+## 📦 Installation
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/codecollab.git
+   cd codecollab
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install Frontend Dependencies**
+   ```bash
+   cd collab-code-editor
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Install Backend Dependencies**
+   ```bash
+   cd collab-code-editor/server
+   npm install
+   ```
 
-## Deploy on Vercel
+## 🏃‍♂️ Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Start the Backend Server**
+   ```bash
+   cd server
+   npm run dev
+   ```
+   Server runs on `http://localhost:3001`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Start the Frontend Application**
+   ```bash
+   # In collab-code-editor root
+   npm run dev
+   ```
+   App runs on `http://localhost:3000`
+
+3. **Open in Browser**
+   - Go to `http://localhost:3000`
+   - Enter your name and create a room
+   - Share the Room ID with friends!
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
