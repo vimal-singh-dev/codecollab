@@ -36,9 +36,12 @@ export default function Home() {
   }
 
   const features = [
-    { icon: Zap, title: 'Real-time Sync', desc: 'Instant collaboration' },
-    { icon: Shield, title: 'Secure Rooms', desc: 'Private workspaces' },
-    { icon: Globe, title: 'Multi-language', desc: '10+ languages' }
+    { icon: Code2, title: 'VS Code–like UI', desc: 'Familiar interface, zero learning curve', category: 'editor' },
+    { icon: Globe, title: 'Multi-language', desc: '8 languages supported', category: 'editor' },
+    { icon: Zap, title: 'Cursor sync', desc: 'See collaborators type in real-time', category: 'editor' },
+    { icon: Users, title: 'Room-based', desc: 'Private collaborative workspaces', category: 'collab' },
+    { icon: Terminal, title: 'Group chat', desc: 'Built-in team messaging', category: 'collab' },
+    { icon: Play, title: 'Video calls', desc: 'Integrated voice & screen sharing', category: 'comm' }
   ]
 
   return (
@@ -89,33 +92,32 @@ export default function Home() {
         >
           <div className="space-y-4">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] text-white">
-              Code Together.
+              Code together.
+              <br />
+              Talk together.
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-hacker-emerald via-emerald-400 to-hacker-emerald animate-gradient">
-                Ship Faster.
+                Ship faster.
               </span>
             </h1>
             <p className="text-hacker-muted text-lg lg:text-xl max-w-lg leading-relaxed">
-              Professional collaborative development environment with real-time synchronization, video chat, and instant code execution.
+              A VS Code–like online editor with real-time collaboration, group chat, and video calls. <span className="text-white font-medium">No setup. Just a link.</span>
             </p>
           </div>
 
-          {/* Feature Pills */}
-          <div className="flex flex-wrap gap-3">
-            {features.map((feature, i) => (
-              <motion.div
+          {/* Feature Pills - 6 concrete features */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {features.map((feature) => (
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.1 }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-hacker-panel/50 border border-hacker-border rounded-xl hover:border-hacker-emerald/30 transition-all group cursor-default"
+                className="flex items-center gap-2 px-3 py-2 bg-hacker-panel/50 border border-hacker-border rounded-lg hover:border-hacker-emerald/30 transition-all group cursor-default"
               >
-                <feature.icon className="w-4 h-4 text-hacker-emerald group-hover:scale-110 transition-transform" />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-white">{feature.title}</span>
-                  <span className="text-[10px] text-hacker-muted">{feature.desc}</span>
+                <feature.icon className="w-4 h-4 text-hacker-emerald flex-shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-semibold text-white truncate">{feature.title}</span>
+                  <span className="text-[10px] text-hacker-muted truncate">{feature.desc}</span>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </motion.div>
@@ -216,12 +218,12 @@ export default function Home() {
                 className="w-full bg-gradient-to-r from-hacker-emerald to-emerald-600 text-black font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-hacker-emerald/30 transition-all duration-300 flex items-center justify-center gap-2.5 group mt-2 relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="relative z-10 text-sm tracking-wide">{isJoin ? 'Join Session' : 'Create Room'}</span>
+                <span className="relative z-10 text-sm tracking-wide">{isJoin ? 'Join Room' : 'Create Room'}</span>
                 <ArrowRight className="relative z-10 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </motion.button>
 
               <p className="text-center text-[11px] text-hacker-muted font-mono">
-                End-to-end encrypted • No installation required
+                No installation • No sign-up • No credit card
               </p>
             </form>
           </div>
@@ -230,16 +232,26 @@ export default function Home() {
       </main>
 
       {/* Professional Footer */}
-      <footer className="border-t border-hacker-border bg-hacker-panel/30 backdrop-blur-sm py-4 px-6 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-hacker-muted">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-hacker-emerald animate-pulse" />
-            <span className="uppercase tracking-wider">System Operational</span>
+      <footer className="border-t border-hacker-border bg-hacker-panel/30 backdrop-blur-sm py-6 px-6 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-hacker-muted">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+            <span className="font-mono">Built by developers, for developers</span>
+            <span className="hidden sm:block">•</span>
+            <span className="font-mono">Next.js • React • Socket.IO • WebRTC</span>
           </div>
           <div className="flex items-center gap-6">
-            <span>v2.0.4</span>
-            <span className="hidden sm:block">•</span>
-            <span className="hidden sm:block">Latency: <span className="text-hacker-emerald">12ms</span></span>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-hacker-emerald transition-colors font-mono"
+            >
+              GitHub ↗
+            </a>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-hacker-emerald animate-pulse" />
+              <span className="font-mono uppercase tracking-wider">System Operational</span>
+            </div>
           </div>
         </div>
       </footer>
