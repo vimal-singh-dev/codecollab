@@ -48,13 +48,13 @@ interface EditorState {
     addFile: (file: File) => void
     removeFile: (fileId: string) => void
     updateFile: (fileId: string, updates: Partial<File>) => void
-    setActiveFile: (fileId: string) => void
+    setActiveFileId: (fileId: string) => void
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
     code: '',
     language: 'javascript',
-    theme: 'vs-dark',
+    theme: 'hacker-dark',
     output: '',
     isExecuting: false,
 
@@ -106,7 +106,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         // If no active file and files exist, set first as active
         const { activeFileId } = get()
         if (!activeFileId && files.length > 0) {
-            get().setActiveFile(files[0].id)
+            get().setActiveFileId(files[0].id)
         }
     },
     addFile: (file) => set((state) => ({ files: [...state.files, file] })),
@@ -148,7 +148,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         }
         return { files: newFiles }
     }),
-    setActiveFile: (fileId) => {
+    setActiveFileId: (fileId: string) => {
         const { files } = get()
         const file = files.find(f => f.id === fileId)
         if (file) {

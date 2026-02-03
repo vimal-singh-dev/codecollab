@@ -48,19 +48,32 @@ io.on('connection', (socket) => {
 
         let room = rooms.get(roomId)
         if (!room) {
-            // Initialize with a default file if new room
-            const defaultFile: File = {
+            // Initialize with default files from reference
+            const f1: File = {
                 id: uuidv4(),
-                name: 'index.js',
+                name: 'main.js',
                 language: 'javascript',
-                content: '// Start coding here...'
+                content: '// Welcome to CodeCollab\n// Try switching themes in the Config tab!\n\nconst squad = ["Alex", "Sam", "Jordan"];\n\nfunction deploy() {\n    console.log("Initiating deployment sequence...");\n    squad.forEach(dev => console.log(`Deploying for ${dev}`));\n}\n\ndeploy();'
             }
+            const f2: File = {
+                id: uuidv4(),
+                name: 'styles.css',
+                language: 'css',
+                content: '.theme-dark {\n    --bg: #000;\n    --primary: #00ff88;\n}'
+            }
+            const f3: File = {
+                id: uuidv4(),
+                name: 'index.html',
+                language: 'html',
+                content: '<!-- Squad Portal -->\n<div id="app">\n    <h1>Hello Squad</h1>\n</div>'
+            }
+
             room = {
                 id: roomId,
-                code: defaultFile.content,
-                language: defaultFile.language,
+                code: f1.content,
+                language: f1.language,
                 users: [],
-                files: [defaultFile]
+                files: [f1, f2, f3]
             }
             rooms.set(roomId, room)
         }

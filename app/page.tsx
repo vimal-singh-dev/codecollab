@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { v4 as uuidv4 } from 'uuid'
-import { Code2, ArrowRight, Terminal, Lock, Users } from 'lucide-react'
+import { Code2, ArrowRight, Terminal, Lock, Users, Play, Zap, Shield, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 
@@ -11,10 +11,7 @@ export default function Home() {
   const router = useRouter()
   const [roomId, setRoomId] = useState('')
   const [userName, setUserName] = useState('')
-  const [password, setPassword] = useState('')
   const [isJoin, setIsJoin] = useState(false)
-
-  // Interactive Mouse Gradient State
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
@@ -34,229 +31,229 @@ export default function Home() {
 
     const params = new URLSearchParams()
     params.set('name', userName)
-    if (password) params.set('password', password)
 
     router.push(`/room/${targetRoomId}?${params.toString()}`)
   }
 
-  // Typewriter Code Animation
-  const codeLines = [
-    { text: "import React from 'react'", color: "text-emerald-700" },
-    { text: "function App() {", color: "text-blue-800" },
-    { text: "  return <h1>Hello World</h1>", color: "text-gray-700" },
-    { text: "}", color: "text-gray-600" }
+  const features = [
+    { icon: Zap, title: 'Real-time Sync', desc: 'Instant collaboration' },
+    { icon: Shield, title: 'Secure Rooms', desc: 'Private workspaces' },
+    { icon: Globe, title: 'Multi-language', desc: '10+ languages' }
   ]
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-emerald-500/30 flex flex-col relative overflow-hidden bg-dot-pattern">
+    <div className="min-h-screen bg-hacker-bg text-white font-sans selection:bg-hacker-emerald selection:text-black flex flex-col relative overflow-hidden">
 
-      {/* Interactive Cursor Gradient Background */}
+      {/* Enhanced Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-hacker-emerald/5 via-transparent to-transparent opacity-40" />
       <div
-        className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300 opacity-20"
+        className="pointer-events-none fixed inset-0 z-0 opacity-30 transition-opacity duration-500"
         style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(16, 185, 129, 0.15), transparent 40%)`
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 255, 136, 0.08), transparent 60%)`
         }}
       />
 
-      {/* Function-focused Navbar */}
-      <motion.nav
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-20"
-      >
-        <div className="flex items-center gap-2">
-          <motion.div
-            whileHover={{ rotate: 180 }}
-            transition={{ duration: 0.5 }}
-            className="w-8 h-8 bg-emerald-500 rounded flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)] cursor-pointer"
-          >
-            <Code2 className="w-5 h-5 text-black" />
-          </motion.div>
-          <span className="font-bold text-xl tracking-tight">CodeCollab</span>
-        </div>
-      </motion.nav>
+      {/* Refined Navbar */}
+      <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-20 relative">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-3"
+        >
+          <div className="p-2.5 bg-gradient-to-br from-hacker-emerald/20 to-hacker-emerald/5 rounded-xl border border-hacker-emerald/30 shadow-lg shadow-hacker-emerald/5">
+            <Terminal className="w-5 h-5 text-hacker-emerald" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-xl tracking-tight leading-none text-white">CodeCollab</span>
+            <span className="text-[9px] text-hacker-emerald/80 font-mono tracking-[0.2em] uppercase">Squad Edition</span>
+          </div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="hidden sm:flex items-center gap-2 text-xs font-mono text-hacker-muted"
+        >
+          <div className="w-1.5 h-1.5 rounded-full bg-hacker-emerald animate-pulse" />
+          <span className="uppercase tracking-wider">Live</span>
+        </motion.div>
+      </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10 pb-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center z-10 pb-16 lg:pb-20">
 
-        {/* Left: Interactive Typography */}
-        <div className="flex flex-col justify-center space-y-4">
-          <h1 className="text-7xl md:text-9xl font-bold tracking-tighter leading-[0.9]">
-            <motion.span
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              whileHover={{ scale: 1.05, x: 20 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 block cursor-default"
-            >
-              Code.
-            </motion.span>
-            <motion.span
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1, type: "spring" }}
-              whileHover={{ scale: 1.05, x: 20 }}
-              className="text-white block cursor-default hover:text-gray-200 transition-colors"
-            >
-              Editor.
-            </motion.span>
-            <motion.span
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              whileHover={{ scale: 1.05, x: 20 }}
-              className="text-white block cursor-default hover:text-gray-200 transition-colors"
-            >
-              Deploy.
-            </motion.span>
-          </h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-gray-400 text-lg max-w-md mt-4 font-mono group"
-          >
-            <span className="text-emerald-500 group-hover:text-emerald-400 transition-colors">{`//`}</span> Initialize instant <span className="text-white group-hover:underline decoration-emerald-500 underline-offset-4 cursor-pointer">collaborative</span> development environments.
-          </motion.p>
-        </div>
+        {/* Enhanced Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col justify-center space-y-8"
+        >
+          <div className="space-y-4">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] text-white">
+              Code Together.
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-hacker-emerald via-emerald-400 to-hacker-emerald animate-gradient">
+                Ship Faster.
+              </span>
+            </h1>
+            <p className="text-hacker-muted text-lg lg:text-xl max-w-lg leading-relaxed">
+              Professional collaborative development environment with real-time synchronization, video chat, and instant code execution.
+            </p>
+          </div>
 
-        {/* Right: Functional Interface */}
-        <div className="relative perspective-1000">
-          {/* Animated Blobs */}
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 90, 0],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl opacity-40"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, -90, 0],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear", delay: 5 }}
-            className="absolute -bottom-10 -left-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl opacity-40"
-          />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            transition={{ duration: 0.6, type: "spring" }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-[#0a0a0a] border border-gray-800/80 rounded-2xl p-8 shadow-2xl relative z-10 backdrop-blur-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] hover:border-emerald-500/30 group"
-          >
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">Session Protocol</h2>
-              <p className="text-gray-500 text-xs uppercase tracking-widest">Secure Environment Access</p>
-            </div>
-
-            {/* Toggle */}
-            <div className="flex bg-gray-900/80 p-1 rounded-lg mb-6 border border-gray-800/50">
-              <button onClick={() => setIsJoin(false)} className={cn("flex-1 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-300", !isJoin ? "bg-gray-800 text-white shadow-sm ring-1 ring-white/5 scale-105" : "text-gray-500 hover:text-gray-300")}>New Session</button>
-              <button onClick={() => setIsJoin(true)} className={cn("flex-1 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-300", isJoin ? "bg-gray-800 text-white shadow-sm ring-1 ring-white/5 scale-105" : "text-gray-500 hover:text-gray-300")}>Join Session</button>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleJoin} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">Developer Alias</label>
-                <div className="relative group/input">
-                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within/input:text-emerald-500 transition-colors" />
-                  <input
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    className="w-full bg-[#111] border border-gray-800/80 rounded-lg pl-10 pr-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all font-mono text-sm group-hover/input:border-gray-700"
-                    placeholder="username"
-                  />
+          {/* Feature Pills */}
+          <div className="flex flex-wrap gap-3">
+            {features.map((feature, i) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className="flex items-center gap-2 px-4 py-2.5 bg-hacker-panel/50 border border-hacker-border rounded-xl hover:border-hacker-emerald/30 transition-all group cursor-default"
+              >
+                <feature.icon className="w-4 h-4 text-hacker-emerald group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-white">{feature.title}</span>
+                  <span className="text-[10px] text-hacker-muted">{feature.desc}</span>
                 </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Premium Glass Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="relative w-full max-w-md mx-auto lg:mr-0"
+        >
+          {/* Glow Effect */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-hacker-emerald/20 to-emerald-600/20 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition duration-1000" />
+
+          <div className="relative glass-panel p-8 rounded-2xl border border-hacker-emerald/20 shadow-2xl shadow-hacker-emerald/5 backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-hacker-border">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-hacker-emerald shadow-lg shadow-hacker-emerald/50 animate-pulse" />
+                <h2 className="text-lg font-bold text-white tracking-wide uppercase font-mono">Initialize</h2>
+              </div>
+              <div className="text-[10px] text-hacker-muted font-mono uppercase tracking-wider">Secure</div>
+            </div>
+
+            <form onSubmit={handleJoin} className="space-y-5">
+              {/* Premium Toggle */}
+              <div className="grid grid-cols-2 gap-2 p-1.5 bg-hacker-bg/80 rounded-xl border border-hacker-border/50">
+                <button
+                  type="button"
+                  onClick={() => setIsJoin(false)}
+                  className={cn(
+                    "py-2.5 text-xs font-bold font-mono uppercase tracking-wider rounded-lg transition-all duration-300",
+                    !isJoin
+                      ? "bg-gradient-to-br from-hacker-emerald to-emerald-600 text-black shadow-lg shadow-hacker-emerald/25"
+                      : "text-hacker-muted hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  New Room
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsJoin(true)}
+                  className={cn(
+                    "py-2.5 text-xs font-bold font-mono uppercase tracking-wider rounded-lg transition-all duration-300",
+                    isJoin
+                      ? "bg-gradient-to-br from-hacker-emerald to-emerald-600 text-black shadow-lg shadow-hacker-emerald/25"
+                      : "text-hacker-muted hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  Join Room
+                </button>
               </div>
 
-              {isJoin && (
-                <div className="space-y-1 animate-in fade-in slide-in-from-top-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">Session ID</label>
-                  <div className="relative group/input">
-                    <Code2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within/input:text-emerald-500 transition-colors" />
+              <div className="space-y-4">
+                {/* Username Input */}
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-mono text-hacker-muted uppercase tracking-wider ml-1">Your Name</label>
+                  <div className="relative group">
+                    <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-hacker-muted group-focus-within:text-hacker-emerald transition-colors z-10" />
                     <input
                       type="text"
-                      value={roomId}
-                      onChange={(e) => setRoomId(e.target.value)}
-                      className="w-full bg-[#111] border border-gray-800/80 rounded-lg pl-10 pr-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all font-mono text-sm group-hover/input:border-gray-700"
-                      placeholder="uuid-v4"
+                      value={userName}
+                      onChange={e => setUserName(e.target.value)}
+                      className="w-full bg-hacker-bg/60 border border-hacker-border rounded-xl px-11 py-3.5 text-sm focus:border-hacker-emerald focus:outline-none focus:ring-2 focus:ring-hacker-emerald/20 transition-all text-white font-medium placeholder:text-gray-700 hover:border-hacker-border/80"
+                      placeholder="Enter your name"
+                      autoFocus
                     />
                   </div>
                 </div>
-              )}
 
-              <div className="space-y-1">
-                <div className="flex justify-between pl-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Access Key</label>
-                  <span className="text-[10px] text-gray-600">(Optional)</span>
-                </div>
-                <div className="relative group/input">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within/input:text-emerald-500 transition-colors" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-[#111] border border-gray-800/80 rounded-lg pl-10 pr-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all font-mono text-sm group-hover/input:border-gray-700"
-                    placeholder="••••••••"
-                  />
-                </div>
+                {/* Room ID Input */}
+                {isJoin && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-2"
+                  >
+                    <label className="block text-[10px] font-mono text-hacker-muted uppercase tracking-wider ml-1">Room ID</label>
+                    <div className="relative group">
+                      <Code2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-hacker-muted group-focus-within:text-hacker-emerald transition-colors z-10" />
+                      <input
+                        type="text"
+                        value={roomId}
+                        onChange={e => setRoomId(e.target.value)}
+                        className="w-full bg-hacker-bg/60 border border-hacker-border rounded-xl px-11 py-3.5 text-sm focus:border-hacker-emerald focus:outline-none focus:ring-2 focus:ring-hacker-emerald/20 transition-all text-white font-mono placeholder:text-gray-700 hover:border-hacker-border/80"
+                        placeholder="Paste room ID"
+                      />
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
+              {/* Premium CTA Button */}
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                type="submit"
                 whileHover={{ scale: 1.02 }}
-                className="w-full bg-white hover:bg-emerald-50 text-black font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 mt-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-hacker-emerald to-emerald-600 text-black font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-hacker-emerald/30 transition-all duration-300 flex items-center justify-center gap-2.5 group mt-2 relative overflow-hidden"
               >
-                {isJoin ? 'Connect' : 'Initialize'} <ArrowRight className="w-4 h-4" />
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <span className="relative z-10 text-sm tracking-wide">{isJoin ? 'Join Session' : 'Create Room'}</span>
+                <ArrowRight className="relative z-10 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </motion.button>
+
+              <p className="text-center text-[11px] text-hacker-muted font-mono">
+                End-to-end encrypted • No installation required
+              </p>
             </form>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
+
       </main>
 
-      {/* Laptop Mockup with Typing Animation */}
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.8 }}
-        className="w-full max-w-5xl mx-auto px-6 relative z-10 mt-auto overflow-hidden h-[120px]"
-      >
-        <div className="w-full h-[400px] bg-[#0c0c0c] border border-gray-800 rounded-t-2xl shadow-2xl relative left-0 top-0 opacity-80 hover:opacity-100 transition-opacity duration-500">
-          <div className="h-6 bg-[#1a1a1a] border-b border-gray-800 rounded-t-2xl flex items-center px-4 gap-2">
-            <div className="flex gap-1.5 opacity-50">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
-            </div>
+      {/* Professional Footer */}
+      <footer className="border-t border-hacker-border bg-hacker-panel/30 backdrop-blur-sm py-4 px-6 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-hacker-muted">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-hacker-emerald animate-pulse" />
+            <span className="uppercase tracking-wider">System Operational</span>
           </div>
-          <div className="p-4 font-mono text-[10px] text-gray-600">
-            {/* Simulated Typing Code */}
-            {codeLines.map((line, i) => (
-              <motion.p
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1 + (i * 0.5) }}
-                className={line.color}
-              >
-                {line.text}
-              </motion.p>
-            ))}
-            <motion.div
-              animate={{ opacity: [0, 1, 0] }}
-              transition={{ repeat: Infinity, duration: 0.8 }}
-              className="w-1.5 h-3 bg-emerald-500 mt-1"
-            />
+          <div className="flex items-center gap-6">
+            <span>v2.0.4</span>
+            <span className="hidden sm:block">•</span>
+            <span className="hidden sm:block">Latency: <span className="text-hacker-emerald">12ms</span></span>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none" />
         </div>
-      </motion.div>
+      </footer>
+
+      <style jsx>{`
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient 3s ease infinite;
+        }
+      `}</style>
     </div>
   )
 }

@@ -1,111 +1,87 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-    Tv,
-    Terminal,
-    Users,
-    FileCode,
-    Menu,
-    X,
-    Settings,
-    Shield,
-    LayoutDashboard
-} from 'lucide-react'
+import { FileCode, MessageSquare, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface DashboardLayoutProps {
     children: React.ReactNode
     sidebarContent: React.ReactNode
-    activeTab: 'editor' | 'files' | 'settings' | 'participants'
+    activeTab: 'files' | 'chat' | 'settings' | 'participants'
     onTabChange: (tab: any) => void
+    isSidebarOpen: boolean
+    onSidebarClose: () => void
 }
 
 export default function DashboardLayout({
     children,
     sidebarContent,
     activeTab,
-    onTabChange
+    onTabChange,
+    isSidebarOpen,
+    onSidebarClose
 }: DashboardLayoutProps) {
-    const [isSidebarOpen, setSidebarOpen] = useState(true)
 
     const tabs = [
-        { id: 'files', icon: FileCode, label: 'Files' },
-        { id: 'participants', icon: Users, label: 'Squad' },
-        { id: 'editor', icon: Tv, label: 'Editor' }, // Usually implicit, but maybe show stats?
+        { id: 'files', icon: FileCode, label: 'FILES' },
+        { id: 'chat', icon: MessageSquare, label: 'CHAT' },
+        { id: 'settings', icon: Settings, label: 'CONFIG' },
     ]
 
     return (
-        <div className="flex h-screen bg-black text-gray-100 font-sans overflow-hidden selection:bg-emerald-500/30">
-            {/* Main Navigation Sidebar (Leftmost strip) */}
-            <div className="w-16 flex flex-col items-center py-4 bg-[#050505] border-r border-gray-800 z-30">
-                <div className="mb-6">
-                    <LayoutDashboard className="w-8 h-8 text-emerald-500" />
-                </div>
-
-                <div className="flex flex-col gap-4 w-full px-2">
+        <div className="flex flex-1 overflow-hidden relative h-full">
+            {/* SIDEBAR */}
+            <aside
+                className={cn(
+                    "bg-hacker-bg border-r border-hacker-border flex flex-col shrink-0 transition-all duration-300 ease-in-out z-20 h-full",
+                    // Mobile: slide in/out
+                    "absolute md:relative",
+                    isSidebarOpen
+                        ? "w-64 translate-x-0"
+                        : "w-0 md:w-0 -translate-x-full md:translate-x-0 overflow-hidden border-r-0"
+                )}
+            >
+                {/* Tabs */}
+                <div className="flex border-b border-hacker-border/50 overflow-x-auto no-scrollbar shrink-0 bg-[#0f0f0f]">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => {
-                                onTabChange(tab.id)
-                                setSidebarOpen(true)
-                            }}
+                            onClick={() => onTabChange(tab.id)}
                             className={cn(
-                                "p-3 rounded-xl transition-all duration-200 group relative",
+                                "flex-1 py-2.5 text-[11px] font-bold border-b-2 flex flex-col items-center justify-center gap-1.5 transition-all min-w-[80px]",
                                 activeTab === tab.id
-                                    ? "bg-emerald-600/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                                    : "text-gray-400 hover:text-gray-100 hover:bg-white/5"
+                                    ? "text-hacker-emerald border-hacker-emerald bg-white/5"
+                                    : "text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5"
                             )}
-                            title={tab.label}
+                            aria-label={`Switch to ${tab.label} tab`}
+                            aria-current={activeTab === tab.id ? "page" : undefined}
                         >
-                            <tab.icon className="w-5 h-5" />
-                            {activeTab === tab.id && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-400 rounded-r-full" />
-                            )}
+                            <tab.icon className="w-4 h-4" />
+                            <span className="tracking-wider">{tab.label}</span>
                         </button>
                     ))}
                 </div>
 
-                <div className="mt-auto">
-                    <button className="p-3 text-gray-400 hover:text-gray-200">
-                        <Settings className="w-5 h-5" />
-                    </button>
+                {/* Sidebar Content */}
+                <div className="flex-1 overflow-hidden flex flex-col">
+                    {sidebarContent}
                 </div>
-            </div>
+            </aside>
 
-            {/* Dynamic Sidebar Panel (Files/Participants etc) */}
-            <AnimatePresence mode='wait'>
-                {isSidebarOpen && (activeTab === 'files' || activeTab === 'participants') && (
-                    <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 280, opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="border-r border-gray-800 bg-[#0a0a0a] flex flex-col z-20"
-                    >
-                        <div className="p-4 border-b border-gray-800/50 flex justify-between items-center">
-                            <h2 className="font-bold text-gray-200 uppercase tracking-wider text-sm">
-                                {tabs.find(t => t.id === activeTab)?.label}
-                            </h2>
-                            <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-white">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            {sidebarContent}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* Mobile Backdrop */}
+            {isSidebarOpen && (
+                <div
+                    className="absolute inset-0 bg-black/50 z-10 md:hidden backdrop-blur-sm"
+                    onClick={onSidebarClose}
+                />
+            )}
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0 bg-black relative">
-                {/* Background Grid Pattern */}
-                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+            {/* Toggle Handlers (Usually in Header, but exposed via context/props if needed) */}
+
+            {/* MAIN CONTENT */}
+            <main className="flex-1 relative bg-[#0a0a0a] flex flex-col min-w-0 font-sans">
                 {children}
-            </div>
+            </main>
         </div>
     )
 }

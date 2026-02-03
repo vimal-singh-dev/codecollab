@@ -1,80 +1,95 @@
 'use client'
 
-import { Code2, Copy, Check, Share2 } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from './Button'
+import { Terminal, Copy, Video, Play } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+import { useEditorStore } from '@/lib/store'
 
 interface HeaderProps {
     roomId?: string
+    onRun?: () => void
+    onToggleVideo?: () => void
+    onToggleSidebar?: () => void
 }
 
-export default function Header({ roomId }: HeaderProps) {
-    const [copied, setCopied] = useState(false)
+export default function Header({ roomId, onRun, onToggleVideo, onToggleSidebar }: HeaderProps) {
+    const { currentUser } = useEditorStore()
 
     const copyRoomId = () => {
         if (!roomId) return
         navigator.clipboard.writeText(roomId)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
         toast.success('Room ID copied!')
     }
 
-    const shareRoom = () => {
-        if (!roomId) return
-        const url = `${window.location.origin}/room/${roomId}`
-        navigator.clipboard.writeText(url)
-        toast.success('Room Link copied to clipboard!')
-    }
-
     return (
-        <header className="h-16 border-b border-gray-800 bg-[#0b1120] px-6 flex items-center justify-between shadow-lg relative z-20">
-            <Link href="/" className="flex items-center gap-3 group">
-                <div className="relative">
-                    <div className="absolute inset-0 bg-blue-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
-                    <Code2 className="w-8 h-8 text-blue-400 relative z-10 transform group-hover:scale-110 transition-transform duration-300" />
+        <header className="h-14 border-b border-hacker-border bg-hacker-panel flex items-center justify-between px-4 shrink-0 transition-all duration-300">
+            {/* Left Section */}
+            <div className="flex items-center gap-4 md:gap-6">
+                {/* Mobile Menu Toggle */}
+                <button
+                    onClick={onToggleSidebar}
+                    className="md:hidden text-hacker-emerald hover:text-white transition-colors p-1"
+                    aria-label="Toggle sidebar"
+                >
+                    <Terminal className="w-5 h-5" />
+                </button>
+
+                {/* Desktop Sidebar Toggle - VS Code Style */}
+                <button
+                    onClick={onToggleSidebar}
+                    className="hidden md:block text-gray-400 hover:text-white transition-colors p-1 hover:bg-white/5 rounded"
+                    aria-label="Toggle sidebar"
+                    title="Toggle Sidebar (Ctrl+B)"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+
+                <div className="flex items-center gap-2 cursor-pointer group">
+                    <Terminal className="w-5 h-5 text-hacker-emerald group-hover:text-hacker-emerald-glow transition-colors hidden md:block" />
+                    <span className="font-bold text-white tracking-wide">CodeCollab</span>
+                    <span className="text-[10px] bg-hacker-emerald/20 text-hacker-emerald px-1.5 py-0.5 rounded font-mono border border-hacker-emerald/20 hidden sm:block">SQUAD ED.</span>
                 </div>
-                <div className="flex flex-col">
-                    <span className="text-xl font-bold tracking-tight text-white leading-none">CodeCollab</span>
-                    <span className="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Squad Edition</span>
-                </div>
-            </Link>
 
-            {roomId && (
-                <div className="flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex items-center gap-1 bg-gray-900/80 border border-gray-700/50 rounded-lg pl-3 pr-1 py-1.5 shadow-inner backdrop-blur-sm">
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mr-2">Mission ID</span>
-                        <code className="text-sm font-mono font-bold text-gray-100 mr-3 tracking-wide">{roomId}</code>
+                {roomId && (
+                    <div className="hidden md:flex items-center gap-3 pl-6 border-l border-hacker-border">
+                        <span className="text-[10px] text-hacker-muted font-mono">ROOM:</span>
+                        <span className="text-sm font-mono text-white select-all">{roomId}</span>
+                        <button onClick={copyRoomId} className="text-hacker-muted hover:text-white transition-colors">
+                            <Copy className="w-3 h-3" />
+                        </button>
+                    </div>
+                )}
+            </div>
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 hover:bg-white/10 text-gray-300 hover:text-white rounded-md transition-all"
-                            onClick={copyRoomId}
-                            title="Copy ID"
-                        >
-                            {copied ? (
-                                <Check className="w-3.5 h-3.5 text-green-400" />
-                            ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                            )}
-                        </Button>
-
-                        <div className="w-px h-4 bg-gray-700 mx-1" />
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 rounded-md transition-all"
-                            onClick={shareRoom}
-                            title="Share Link"
-                        >
-                            <Share2 className="w-3.5 h-3.5" />
-                        </Button>
+            {/* Right Section: Squad Actions */}
+            <div className="flex items-center gap-3">
+                {/* Avatar (Static 'YOU' for now, or dynamic) */}
+                <div className="flex -space-x-2 mr-4">
+                    <div
+                        className="w-8 h-8 rounded-full bg-hacker-border border border-black flex items-center justify-center text-[10px] font-bold text-white z-10"
+                        style={{ backgroundColor: currentUser?.color }}
+                    >
+                        {currentUser?.name?.[0] || 'U'}
                     </div>
                 </div>
-            )}
+
+                <button
+                    onClick={onToggleVideo}
+                    className="p-2 rounded bg-hacker-bg border border-hacker-border hover:border-hacker-emerald/50 hover:text-hacker-emerald transition-colors text-hacker-muted"
+                >
+                    <Video className="w-4 h-4" />
+                </button>
+
+                <button
+                    onClick={onRun}
+                    className="flex items-center gap-2 px-4 py-1.5 rounded bg-hacker-emerald/10 border border-hacker-emerald/30 text-hacker-emerald hover:bg-hacker-emerald hover:text-black transition-all duration-200 text-xs font-bold shadow-[0_0_10px_rgba(0,255,136,0.1)] active:scale-95"
+                >
+                    <Play className="w-3 h-3 fill-current" /> RUN
+                </button>
+            </div>
         </header>
     )
 }

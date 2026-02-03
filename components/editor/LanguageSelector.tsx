@@ -1,13 +1,14 @@
 import { ChevronDown, Code, Hash, Terminal } from 'lucide-react'
 
 const languages = [
-    { id: 'javascript', name: 'JavaScript', icon: Code },
-    { id: 'typescript', name: 'TypeScript', icon: Code },
-    { id: 'python', name: 'Python', icon: Hash },
-    { id: 'java', name: 'Java', icon: Code },
-    { id: 'cpp', name: 'C++', icon: Code },
-    { id: 'css', name: 'CSS', icon: Hash },
-    { id: 'html', name: 'HTML', icon: Code },
+    { id: 'javascript', name: 'JavaScript', ext: 'JS' },
+    { id: 'typescript', name: 'TypeScript', ext: 'TS' },
+    { id: 'python', name: 'Python', ext: 'PY' },
+    { id: 'java', name: 'Java', ext: 'JAVA' },
+    { id: 'cpp', name: 'C++', ext: 'C++' },
+    { id: 'c', name: 'C', ext: 'C' },
+    { id: 'css', name: 'CSS', ext: 'CSS' },
+    { id: 'html', name: 'HTML', ext: 'HTML' },
 ]
 
 interface LanguageSelectorProps {
@@ -16,26 +17,20 @@ interface LanguageSelectorProps {
 }
 
 export default function LanguageSelector({ selected, onSelect }: LanguageSelectorProps) {
-    // Find selected icon
-    const SelectedIcon = languages.find(l => l.id === selected)?.icon || Terminal
+    const selectedLang = languages.find(l => l.id === selected) || languages[0]
 
     return (
-        <div className="relative group">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-blue-400">
-                <SelectedIcon className="w-4 h-4" />
-            </div>
-            <select
-                value={selected}
-                onChange={(e) => onSelect(e.target.value)}
-                className="appearance-none bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 rounded-lg pl-10 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all cursor-pointer font-medium min-w-[140px]"
-            >
-                {languages.map((lang) => (
-                    <option key={lang.id} value={lang.id} className="bg-gray-800 py-1">
-                        {lang.name}
-                    </option>
-                ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none group-hover:text-gray-300 transition-colors" />
-        </div>
+        <select
+            value={selected}
+            onChange={(e) => onSelect(e.target.value)}
+            className="bg-transparent text-white text-xs font-mono font-semibold cursor-pointer focus:outline-none hover:bg-white/10 px-1 rounded appearance-none pr-4"
+            style={{ backgroundImage: 'none' }}
+        >
+            {languages.map((lang) => (
+                <option key={lang.id} value={lang.id} className="bg-[#1e1e1e] text-white">
+                    {lang.name}
+                </option>
+            ))}
+        </select>
     )
 }

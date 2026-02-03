@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCollab - Squad Edition</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts: JetBrains Mono & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Monaco Editor Loader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hacker: {
+                            bg: '#050505',
+                            panel: '#0f0f0f',
+                            border: '#1a1a1a',
+                            emerald: '#00ff88',
+                            emeraldDim: 'rgba(0, 255, 136, 0.1)',
+                            emeraldGlow: 'rgba(0, 255, 136, 0.4)',
+                            text: '#e0e0e0',
+                            muted: '#6b7280'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #e0e0e0;
+            overflow: hidden; 
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f0f0f; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        #editor-container { height: calc(100vh - 120px); }
+
+        /* Remote Cursor */
+        .remote-cursor {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background-color: #f43f5e; 
+            pointer-events: none;
+            z-index: 50;
+            transition: all 0.1s ease-out;
+        }
+        .remote-cursor-label {
+            position: absolute;
+            top: -18px;
+            left: 0;
+            background-color: #f43f5e;
+            color: white;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Chat Bubbles */
+        .chat-msg {
+            max-width: 90%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .msg-me {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            border-bottom-right-radius: 0;
+            align-self: flex-end;
+        }
+        .msg-other {
+            background: #1f2937;
+            color: #e5e7eb;
+            border-bottom-left-radius: 0;
+            align-self: flex-start;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col antialiased selection:bg-hacker-emerald selection:text-hacker-bg">
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MODAL: JOIN ROOM -->
+    <div id="join-modal" class="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center backdrop-blur-md transition-opacity duration-300">
+        <div class="glass-panel p-8 rounded-lg w-full max-w-md border border-hacker-emerald/20 shadow-[0_0_50px_rgba(0,255,136,0.1)]">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 bg-hacker-emerald/10 rounded-lg">
+                    <i data-lucide="code-2" class="w-8 h-8 text-hacker-emerald"></i>
+                </div>
+                <h1 class="text-2xl font-bold font-sans tracking-tight text-white">CodeCollab</h1>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-hacker-muted mb-1">USERNAME</label>
+                    <input type="text" id="username-input" value="Squad_Leader_01" class="w-full bg-black border border-hacker-border rounded p-2 text-sm focus:border-hacker-emerald focus:outline-none focus:ring-1 focus:ring-hacker-emerald transition-colors text-white font-mono">
+                </div>
+                <button id="btn-join" class="w-full bg-hacker-emerald text-black font-bold py-3 rounded hover:bg-white transition-all duration-200 flex items-center justify-center gap-2 group shadow-[0_0_20px_rgba(0,255,136,0.3)]">
+                    <span>INITIALIZE LINK</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP LAYOUT -->
+    <div id="app-layout" class="flex flex-col h-full opacity-50 pointer-events-none transition-opacity duration-500">
+        
+        <!-- HEADER -->
+        <header class="h-14 border-b border-hacker-border bg-hacker-panel flex items-center justify-between px-4 shrink-0">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full')">
+                    <i data-lucide="terminal" class="w-5 h-5 text-hacker-emerald"></i>
+                    <span class="font-bold text-white tracking-wide">CodeCollab</span>
+                    <span class="text-[10px] bg-hacker-emerald/20 text-hacker-emerald px-1.5 py-0.5 rounded font-mono border border-hacker-emerald/20 hidden sm:block">SQUAD ED.</span>
+                </div>
+                <div class="hidden md:flex items-center gap-3 pl-6 border-l border-hacker-border">
+                    <span class="text-[10px] text-hacker-muted font-mono">ROOM:</span>
+                    <span id="display-room-id" class="text-sm font-mono text-white select-all"> ... </span>
+                    <button onclick="copyRoomId()" class="text-hacker-muted hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                </div>
+            </div>
+
+            <!-- Squad Actions -->
+            <div class="flex items-center gap-3">
+                <div class="flex -space-x-2 mr-4" id="participant-avatars">
+                    <div class="w-8 h-8 rounded-full bg-hacker-border border border-black flex items-center justify-center text-[10px] font-bold text-white z-10">YOU</div>
+                </div>
+                <button class="p-2 rounded bg-hacker-bg border border-hacker-border hover:border-hacker-emerald/50 hover:text-hacker-emerald transition-colors text-hacker-muted" onclick="toggleVideoPanel()">
+                    <i data-lucide="video" class="w-4 h-4"></i>
+                </button>
+                <button onclick="runCode()" class="flex items-center gap-2 px-4 py-1.5 rounded bg-hacker-emerald/10 border border-hacker-emerald/30 text-hacker-emerald hover:bg-hacker-emerald hover:text-black transition-all duration-200 text-xs font-bold shadow-[0_0_10px_rgba(0,255,136,0.1)]">
+                    <i data-lucide="play" class="w-3 h-3 fill-current"></i> RUN
+                </button>
+            </div>
+        </header>
+
+        <!-- WORKSPACE -->
+        <div class="flex flex-1 overflow-hidden relative">
+            
+            <!-- SIDEBAR -->
+            <aside id="sidebar" class="w-64 bg-hacker-bg border-r border-hacker-border flex flex-col shrink-0 z-20 transition-transform duration-300 absolute md:relative h-full translate-x-0">
+                
+                <!-- Tabs -->
+                <div class="flex border-b border-hacker-border overflow-x-auto no-scrollbar">
+                    <button class="flex-1 py-3 text-[10px] font-bold text-hacker-muted border-b-2 border-transparent hover:text-white flex flex-col items-center justify-center gap-1 active-tab" id="tab-files" onclick="switchSidebarTab('files')">
+                        <i data-lucide="file-code" class="w-4 h-4"></i> FILES
+                    </button>
+                    <button class="flex-1 py-3 text-[10px] font-bold text-hacker-muted border-b-2 border-transparent hover:text-white flex flex-col items-center justify-center gap-1" id="tab-chat" onclick="switchSidebarTab('chat')">
+                        <i data-lucide="message-square" class="w-4 h-4"></i> CHAT
+                    </button>
+                    <button class="flex-1 py-3 text-[10px] font-bold text-hacker-muted border-b-2 border-transparent hover:text-white flex flex-col items-center justify-center gap-1" id="tab-settings" onclick="switchSidebarTab('settings')">
+                        <i data-lucide="settings" class="w-4 h-4"></i> CONFIG
+                    </button>
+                </div>
+
+                <!-- Content: Files -->
+                <div id="sidebar-files" class="flex-1 overflow-y-auto p-3 space-y-1">
+                    <div class="flex justify-between items-center px-1 py-2 mb-1">
+                        <span class="text-[10px] text-hacker-muted font-mono uppercase tracking-wider">Explorer</span>
+                        <button onclick="createNewFile()" class="text-hacker-emerald hover:text-white transition-colors p-1 hover:bg-white/5 rounded"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                    </div>
+                    <div id="file-list" class="space-y-0.5"></div>
+                </div>
+
+                <!-- Content: Chat -->
+                <div id="sidebar-chat" class="flex flex-col h-full hidden bg-[#080808]">
+                    <div class="flex-1 overflow-y-auto p-3 space-y-3 flex flex-col" id="chat-messages">
+                        <!-- Messages injected here -->
+                        <div class="text-center text-[10px] text-hacker-muted my-2">Today</div>
+                    </div>
+                    <div class="p-3 border-t border-hacker-border bg-hacker-panel">
+                        <div class="flex gap-2">
+                            <input type="text" id="chat-input" placeholder="Type to squad..." class="flex-1 bg-hacker-bg border border-hacker-border rounded px-3 py-2 text-xs text-white focus:border-hacker-emerald focus:outline-none font-sans">
+                            <button onclick="sendMessage()" class="bg-hacker-emerald text-black p-2 rounded hover:bg-white transition-colors"><i data-lucide="send" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content: Settings -->
+                <div id="sidebar-settings" class="flex-1 overflow-y-auto p-4 hidden">
+                    <div class="mb-6">
+                        <span class="text-[10px] text-hacker-muted font-mono uppercase tracking-wider block mb-3">Editor Theme</span>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 p-2 rounded border border-hacker-border cursor-pointer hover:bg-hacker-border/50 transition-colors">
+                                <input type="radio" name="theme" value="hacker-dark" checked onchange="changeTheme('hacker-dark')" class="accent-hacker-emerald">
+                                <span class="w-3 h-3 rounded-full bg-[#050505] border border-gray-600"></span>
+                                <span class="text-sm text-gray-200">Cyber Hacker (Default)</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 rounded border border-hacker-border cursor-pointer hover:bg-hacker-border/50 transition-colors">
+                                <input type="radio" name="theme" value="dracula" onchange="changeTheme('dracula')" class="accent-pink-500">
+                                <span class="w-3 h-3 rounded-full bg-[#282a36] border border-purple-500"></span>
+                                <span class="text-sm text-gray-200">Dracula</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 rounded border border-hacker-border cursor-pointer hover:bg-hacker-border/50 transition-colors">
+                                <input type="radio" name="theme" value="one-dark" onchange="changeTheme('one-dark')" class="accent-blue-500">
+                                <span class="w-3 h-3 rounded-full bg-[#282c34] border border-gray-500"></span>
+                                <span class="text-sm text-gray-200">One Dark Pro</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 rounded border border-hacker-border cursor-pointer hover:bg-hacker-border/50 transition-colors">
+                                <input type="radio" name="theme" value="monokai" onchange="changeTheme('monokai')" class="accent-orange-500">
+                                <span class="w-3 h-3 rounded-full bg-[#272822] border border-orange-500"></span>
+                                <span class="text-sm text-gray-200">Monokai</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                         <span class="text-[10px] text-hacker-muted font-mono uppercase tracking-wider block mb-3">Account</span>
+                         <div class="text-xs text-gray-400">
+                             Signed in as <span id="settings-username" class="text-white font-bold">...</span>
+                         </div>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- MAIN EDITOR AREA -->
+            <main class="flex-1 relative bg-[#0a0a0a] flex flex-col min-w-0">
+                <!-- Tabs Bar -->
+                <div class="h-9 bg-hacker-bg border-b border-hacker-border flex items-end overflow-x-auto" id="editor-tabs"></div>
+                
+                <!-- Monaco Editor Container -->
+                <div class="relative flex-1 overflow-hidden group">
+                    <div id="editor-container"></div>
+                </div>
+
+                <!-- TERMINAL -->
+                <div class="h-48 bg-hacker-panel border-t border-hacker-border flex flex-col shrink-0" id="terminal-panel">
+                    <div class="flex items-center justify-between px-4 py-1 border-b border-hacker-border bg-hacker-bg">
+                        <span class="text-xs font-bold text-hacker-muted flex items-center gap-2">
+                            <i data-lucide="terminal-square" class="w-3 h-3"></i> TERMINAL
+                        </span>
+                        <button onclick="clearTerminal()" class="text-[10px] text-hacker-muted hover:text-white font-mono">CLEAR</button>
+                    </div>
+                    <div id="terminal-content" class="flex-1 p-4 overflow-y-auto font-mono text-xs md:text-sm text-gray-300">
+                        <div class="text-hacker-emerald mb-2">System ready...</div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- VIDEO OVERLAY -->
+            <div id="video-panel" class="absolute bottom-56 right-4 w-64 bg-black border border-hacker-border rounded-lg shadow-2xl z-40 transition-all duration-300 transform translate-x-[120%] flex flex-col overflow-hidden">
+                <div class="h-8 bg-hacker-panel border-b border-hacker-border flex items-center justify-between px-3">
+                    <span class="text-xs font-bold text-white">SQUAD VOICE</span>
+                    <button onclick="toggleVideoPanel()" class="text-hacker-muted hover:text-white"><i data-lucide="x" class="w-3 h-3"></i></button>
+                </div>
+                <div class="flex-1 bg-[#0a0a0a] flex flex-col">
+                    <div class="relative h-28 bg-gray-900 w-full overflow-hidden">
+                        <img src="https://picsum.photos/seed/user1/400/200" class="w-full h-full object-cover opacity-60">
+                        <div class="absolute bottom-1 left-1 bg-black/70 px-1 rounded text-[9px] text-white font-mono">YOU</div>
+                    </div>
+                    <div class="relative h-28 bg-gray-900 w-full overflow-hidden border-t border-hacker-border">
+                        <img src="https://picsum.photos/seed/user2/400/200" class="w-full h-full object-cover opacity-60">
+                        <div class="absolute bottom-1 left-1 bg-black/70 px-1 rounded text-[9px] text-white font-mono">BOT_DEV</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- 1. STATE MANAGEMENT ---
+        const state = {
+            username: '',
+            roomId: '',
+            theme: 'hacker-dark',
+            files: [
+                { id: 'f1', name: 'main.js', language: 'javascript', content: '// Welcome to CodeCollab\n// Try switching themes in the Config tab!\n\nconst squad = ["Alex", "Sam", "Jordan"];\n\nfunction deploy() {\n    console.log("Initiating deployment sequence...");\n    squad.forEach(dev => console.log(`Deploying for ${dev}`));\n}\n\ndeploy();' },
+                { id: 'f2', name: 'styles.css', language: 'css', content: '.theme-dark {\n    --bg: #000;\n    --primary: #00ff88;\n}' },
+                { id: 'f3', name: 'index.html', language: 'html', content: '<!-- Squad Portal -->\n<div id="app">\n    <h1>Hello Squad</h1>\n</div>' }
+            ],
+            activeFileId: 'f1',
+            terminalHistory: []
+        };
+
+        // --- 2. MONACO EDITOR SETUP ---
+        let editor;
+        let remoteCursor; 
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }});
+
+        require(['vs/editor/editor.main'], function() {
+            
+            // --- THEME DEFINITIONS ---
+            monaco.editor.defineTheme('hacker-dark', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '6b7280', fontStyle: 'italic' },
+                    { token: 'keyword', foreground: '00ff88' },
+                    { token: 'string', foreground: 'a5f3fc' },
+                ],
+                colors: {
+                    'editor.background': '#0a0a0a',
+                    'editor.foreground': '#e0e0e0',
+                    'editor.lineHighlightBackground': '#111111',
+                    'editorCursor.foreground': '#00ff88',
+                    'editor.selectionBackground': '#003300',
+                    'editorLineNumber.foreground': '#333333',
+                    'editorLineNumber.activeForeground': '#666666'
+                }
+            });
+
+            monaco.editor.defineTheme('dracula', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '6272a4', fontStyle: 'italic' },
+                    { token: 'keyword', foreground: 'ff79c6' },
+                    { token: 'string', foreground: 'f1fa8c' },
+                    { token: 'number', foreground: 'bd93f9' }
+                ],
+                colors: {
+                    'editor.background': '#282a36',
+                    'editor.foreground': '#f8f8f2',
+                    'editor.lineHighlightBackground': '#44475a',
+                    'editorCursor.foreground': '#f8f8f2',
+                    'editor.selectionBackground': '#44475a',
+                    'editorLineNumber.foreground': '#6272a4'
+                }
+            });
+
+            monaco.editor.defineTheme('one-dark', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '5c6370', fontStyle: 'italic' },
+                    { token: 'keyword', foreground: 'c678dd' },
+                    { token: 'string', foreground: '98c379' },
+                    { token: 'variable', foreground: 'e06c75' },
+                    { token: 'function', foreground: '61afef' }
+                ],
+                colors: {
+                    'editor.background': '#282c34',
+                    'editor.foreground': '#abb2bf',
+                    'editor.lineHighlightBackground': '#2c313c',
+                    'editorCursor.foreground': '#528bff',
+                    'editor.selectionBackground': '#3e4451',
+                    'editorLineNumber.foreground': '#4b5263'
+                }
+            });
+
+            monaco.editor.defineTheme('monokai', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '75715e', fontStyle: 'italic' },
+                    { token: 'keyword', foreground: 'f92672' },
+                    { token: 'string', foreground: 'e6db74' },
+                    { token: 'function', foreground: 'a6e22e' },
+                    { token: 'number', foreground: 'ae81ff' }
+                ],
+                colors: {
+                    'editor.background': '#272822',
+                    'editor.foreground': '#f8f8f2',
+                    'editor.lineHighlightBackground': '#3e3d32',
+                    'editorCursor.foreground': '#f8f8f2',
+                    'editor.selectionBackground': '#49483e',
+                    'editorLineNumber.foreground': '#75715e'
+                }
+            });
+
+            // Initialize Editor
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: state.files[0].content,
+                language: state.files[0].language,
+                theme: 'hacker-dark',
+                automaticLayout: true,
+                fontSize: 14,
+                fontFamily: 'JetBrains Mono',
+                minimap: { enabled: true },
+                scrollBeyondLastLine: false,
+                renderLineHighlight: 'all',
+                padding: { top: 20 },
+                lineNumbers: 'on'
+            });
+
+            editor.onDidChangeModelContent((e) => {
+                const currentFile = state.files.find(f => f.id === state.activeFileId);
+                if (currentFile) currentFile.content = editor.getValue();
+            });
+
+            initRemoteCursor();
+            simulateBotActivity();
+        });
+
+        // --- 3. UI LOGIC ---
+
+        // Initialization
+        document.getElementById('btn-join').addEventListener('click', () => {
+            const username = document.getElementById('username-input').value;
+            if(!username) return showToast('Username required', 'error');
+            
+            state.username = username;
+            state.roomId = 'ROOM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            
+            document.getElementById('display-room-id').innerText = state.roomId;
+            document.getElementById('settings-username').innerText = username;
+            
+            const modal = document.getElementById('join-modal');
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                const app = document.getElementById('app-layout');
+                app.classList.remove('opacity-50', 'pointer-events-none');
+                renderFileList();
+                renderTabs();
+            }, 300);
+
+            // Initial Chat Message
+            addChatMessage("System", `Welcome to the squad, ${username}! Select a theme in Config to start coding.`, false);
+            showToast('Session Initialized', 'success');
+        });
+
+        // Sidebar Logic
+        function switchSidebarTab(tab) {
+            const tabs = ['files', 'chat', 'settings'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.remove('text-hacker-emerald', 'border-hacker-emerald');
+                document.getElementById(`tab-${t}`).classList.add('text-hacker-muted', 'border-transparent');
+                document.getElementById(`sidebar-${t}`).classList.add('hidden');
+            });
+            
+            document.getElementById(`tab-${tab}`).classList.add('text-hacker-emerald', 'border-hacker-emerald');
+            document.getElementById(`tab-${tab}`).classList.remove('text-hacker-muted', 'border-transparent');
+            document.getElementById(`sidebar-${tab}`).classList.remove('hidden');
+        }
+
+        // Chat Logic
+        function addChatMessage(sender, text, isMe) {
+            const container = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "flex flex-col " + (isMe ? "items-end" : "items-start");
+            
+            const senderLabel = isMe ? "" : `<span class="text-[10px] text-hacker-emerald mb-0.5 ml-1">${sender}</span>`;
+            
+            msgDiv.innerHTML = `
+                ${senderLabel}
+                <div class="chat-msg ${isMe ? 'msg-me' : 'msg-other'}">
+                    ${text}
+                </div>
+            `;
+            
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+            
+            addChatMessage("You", text, true);
+            input.value = '';
+            
+            // Bot Auto-reply simulation
+            if(Math.random() > 0.5) {
+                setTimeout(() => {
+                    const replies = [
+                        "Got it.",
+                        "Nice one.",
+                        "I'm checking the logs.",
+                        "Deploying...",
+                        "Can you review line 24?",
+                        "Looks good to me."
+                    ];
+                    addChatMessage("Bot_Dev_99", replies[Math.floor(Math.random() * replies.length)], false);
+                    
+                    // Unread indicator logic could go here
+                    const tab = document.getElementById('tab-chat');
+                    tab.classList.add('text-white');
+                    setTimeout(() => tab.classList.remove('text-white'), 2000);
+                }, 1000 + Math.random() * 2000);
+            }
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') sendMessage();
+        });
+
+        // Theme Logic
+        function changeTheme(themeName) {
+            monaco.editor.setTheme(themeName);
+            state.theme = themeName;
+            
+            // Adjust UI slightly based on theme for immersion
+            const terminal = document.getElementById('terminal-content');
+            if(themeName === 'dracula') {
+                terminal.style.color = '#f8f8f2';
+            } else if (themeName === 'monokai') {
+                terminal.style.color = '#f8f8f2';
+            } else {
+                terminal.style.color = '#e0e0e0';
+            }
+            
+            showToast(`Theme switched to ${themeName}`, 'info');
+        }
+
+        // File System Logic
+        function renderFileList() {
+            const list = document.getElementById('file-list');
+            list.innerHTML = '';
+            state.files.forEach(file => {
+                const isActive = file.id === state.activeFileId;
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between p-2 rounded cursor-pointer text-sm group ${isActive ? 'bg-hacker-border text-white' : 'text-hacker-muted hover:bg-hacker-border/50'}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <i data-lucide="${getFileIcon(file.name)}" class="w-3 h-3 shrink-0"></i>
+                        <span class="truncate">${file.name}</span>
+                    </div>
+                `;
+                div.onclick = () => switchFile(file.id);
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('editor-tabs');
+            container.innerHTML = '';
+            state.files.forEach(file => {
+                const isActive = file.id === state.activeFileId;
+                const tab = document.createElement('div');
+                tab.className = `flex items-center gap-2 px-4 py-1.5 text-xs border-t-2 cursor-pointer min-w-[100px] max-w-[150px] hover:bg-hacker-bg/50 ${isActive ? 'bg-[#0a0a0a] border-hacker-emerald text-white' : 'bg-transparent border-transparent text-hacker-muted'}`;
+                tab.innerHTML = `<span class="truncate font-mono">${file.name}</span>`;
+                tab.onclick = () => switchFile(file.id);
+                container.appendChild(tab);
+            });
+        }
+
+        function switchFile(id) {
+            const current = state.files.find(f => f.id === state.activeFileId);
+            if(current) current.content = editor.getValue();
+
+            state.activeFileId = id;
+            const next = state.files.find(f => f.id === id);
+            
+            monaco.editor.setModelLanguage(editor.getModel(), next.language);
+            editor.setValue(next.content);
+            
+            renderFileList();
+            renderTabs();
+        }
+
+        function createNewFile() {
+            const name = prompt("Enter filename:");
+            if(name) {
+                const ext = name.split('.').pop();
+                const langMap = { 'js':'javascript', 'html':'html', 'css':'css', 'py':'python', 'json':'json' };
+                const lang = langMap[ext] || 'javascript';
+                
+                state.files.push({ id: Date.now().toString(), name, language: lang, content: '' });
+                switchFile(state.files[state.files.length-1].id);
+            }
+        }
+
+        function getFileIcon(name) {
+            const ext = name.split('.').pop();
+            const icons = { 'js':'file-code', 'html':'file-code-2', 'css':'palette', 'py':'file-json', 'json':'braces' };
+            return icons[ext] || 'file';
+        }
+
+        // --- 4. UTILS ---
+        function runCode() {
+            const term = document.getElementById('terminal-content');
+            term.innerHTML += `<div class="mt-2 text-hacker-emerald">> Running script...</div>`;
+            
+            setTimeout(() => {
+                try {
+                    // Safe execution simulation
+                    const logs = [];
+                    const originalLog = console.log;
+                    console.log = (l) => logs.push(l);
+                    new Function(editor.getValue())();
+                    console.log = originalLog;
+                    
+                    if(logs.length) logs.forEach(l => term.innerHTML += `<div class="pl-4">${l}</div>`);
+                    else term.innerHTML += `<div class="pl-4 text-hacker-muted italic">No output.</div>`;
+                } catch(e) {
+                    term.innerHTML += `<div class="text-red-500 pl-4">Error: ${e.message}</div>`;
+                }
+                term.scrollTop = term.scrollHeight;
+            }, 500);
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminal-content').innerHTML = '<div class="text-hacker-muted">Terminal cleared.</div>';
+        }
+
+        function toggleVideoPanel() {
+            document.getElementById('video-panel').classList.toggle('translate-x-[120%]');
+        }
+
+        function copyRoomId() {
+            navigator.clipboard.writeText(state.roomId);
+            showToast('Room ID copied!', 'success');
+        }
+
+        function showToast(msg, type) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `bg-hacker-panel border ${type==='error'?'border-red-500':'border-hacker-emerald'} px-4 py-2 rounded shadow-lg text-xs text-white flex items-center gap-2 animate-bounce transition-all`;
+            t.innerHTML = `<i data-lucide="${type==='error'?'alert-triangle':'check'}" class="w-3 h-3"></i> ${msg}`;
+            c.appendChild(t);
+            lucide.createIcons();
+            setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3000);
+        }
+
+        // --- 5. SIMULATION ---
+        function initRemoteCursor() {
+            remoteCursor = document.createElement('div');
+            remoteCursor.className = 'remote-cursor';
+            remoteCursor.innerHTML = '<div class="remote-cursor-label">Bot_Dev_99</div>';
+            // Wait for editor DOM
+            setTimeout(() => {
+                document.querySelector('.monaco-editor .overflow-guard')?.appendChild(remoteCursor);
+            }, 1000);
+        }
+
+        function simulateBotActivity() {
+            setInterval(() => {
+                if(!remoteCursor || !editor) return;
+                const layout = editor.getLayoutInfo();
+                const x = Math.random() * (layout.contentWidth - 100);
+                const y = Math.random() * (layout.contentHeight - 100);
+                remoteCursor.style.transform = `translate(${x}px, ${y}px)`;
+            }, 4000);
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

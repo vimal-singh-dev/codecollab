@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 export default function FileExplorer() {
-    const { files, activeFileId, setActiveFile, roomId } = useEditorStore()
+    const { files, activeFileId, setActiveFileId, roomId } = useEditorStore()
     const [newFileName, setNewFileName] = useState('')
     const [isCreating, setIsCreating] = useState(false)
 
@@ -36,13 +36,13 @@ export default function FileExplorer() {
 
     const handleDeleteFile = (e: React.MouseEvent, fileId: string) => {
         e.stopPropagation()
-        if (confirm('Are you sure you want to delete this file?')) {
-            getSocket()?.emit('delete-file', { roomId, fileId })
-        }
+        // VS Code style: instant deletion without confirmation
+        getSocket()?.emit('delete-file', { roomId, fileId })
+        toast.success('File deleted')
     }
 
     const handleFileClick = (fileId: string) => {
-        setActiveFile(fileId)
+        setActiveFileId(fileId)
         // Emit selection change if you want to sync active file? 
         // Usually active file is user-local, but file LIST is synced.
     }
